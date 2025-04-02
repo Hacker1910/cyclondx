@@ -1,0 +1,66 @@
+name: CycloneDX SBOM Report
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  sbom_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.61.0
+
+      - name: Generate SBOM Report
+        run: |
+          trivy fs --format cyclonedx --scanners vuln --output sbom.json .
+
+      - name: Upload SBOM Report as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: SBOM-Report
+          path: sbom.json
+
+      - name: Send SBOM Report to Challenge Listener
+        run: |
+          curl -X POST -H "Content-Type: multipart/form-data" -F "file=@sbom.json" http://<your-lab-ip>:8880/callback
+name: CycloneDX SBOM Report
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sbom_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.61.0
+
+      - name: Generate SBOM Report
+        run: |
+          trivy fs --format cyclonedx --scanners vuln --output sbom.json .
+
+      - name: Upload SBOM Report as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: SBOM-Report
+          path: sbom.json
+
+      - name: Send SBOM Report to Challenge Listener
+        run: |
+          curl -X POST -H "Content-Type: multipart/form-data" -F "file=@sbom.json" http://35.219.161.121:8880/callback
